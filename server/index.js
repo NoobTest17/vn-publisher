@@ -4,7 +4,6 @@ const cors = require('cors')
 const router = require('./routes/index.js')
 const errorHandler = require('./middleware/ErrorHandlingMiddleware.js')
 
-
 const PORT = process.env.PORT || 5000
 
 const app = express()
@@ -13,11 +12,11 @@ app.use(express.json())
 app.use('/api', router)
 
 app.use(errorHandler)
-
 const start = async () => {
   try {
+    // добавить подключение к базе данных
     app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
 }
