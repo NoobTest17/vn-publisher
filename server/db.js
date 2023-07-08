@@ -17,6 +17,17 @@ class DatabaseClient {
       throw new Error(`${error.status}: Ошибка при выполнении запроса: ${error.message}`);
     }
   }
+
+  async queryCreate(data) {
+    try {
+      const url = this.host + this.db + 'namespaces/test/'
+      const query = `${url}items?format=json`
+      const res = await axios.post(query, data, {params: {format: 'json'}});
+      return res.data.items;
+    } catch (e) {
+      throw new Error(`${error.status}: Ошибка при выполнении запроса: ${error.message}`);
+    }
+  }
 }
 
 module.exports = new DatabaseClient

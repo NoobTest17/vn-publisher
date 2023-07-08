@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const {v4: uuidv4} = require("uuid");
 const bd = require('../db');
+const {json} = require("express");
 
 const generateJwt = (id, email) => {
   return jwt.sign(
@@ -24,7 +25,11 @@ class UserController {
     }
     const hashPassword = await bcrypt.hash(password, 5);
     const userId = uuidv4();
-    // const user = await bd.query(''); // Регистрация пользователя в базу данных Отправка данных объект {email, password: hashPassword, id: userId}
+    const newUser = await bd.queryCreate(JSON.stringify({
+      id: userId,
+      password: hashPassword,
+      email: email
+    }));
     const token = generateJwt(userId, email);
     return res.json({token})
   }
