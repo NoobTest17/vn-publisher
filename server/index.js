@@ -14,7 +14,6 @@ app.use('/api', router)
 app.use(errorHandler)
 const start = async () => {
   try {
-    // добавить подключение к базе данных
     app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
   } catch (e) {
     console.log(e);
