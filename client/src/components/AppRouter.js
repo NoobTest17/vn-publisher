@@ -8,7 +8,6 @@ import Main from "../pages/Main";
 const AppRouter = () => {
   const {user} = useContext(Context)
 
-  console.log(user)
   return (
     <Switch>
         {publicRoutes.map(({path, Component}) =>
