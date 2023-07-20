@@ -20,7 +20,7 @@ class DatabaseClient {
 
   async queryCreate(data) {
     try {
-      const url = this.host + this.db + 'namespaces/test/'
+      const url = this.host + this.db + 'namespaces/auth/'
       const query = `${url}items?format=json`
       const res = await axios.post(query, data, {params: {format: 'json'}});
       return res.data.items;
