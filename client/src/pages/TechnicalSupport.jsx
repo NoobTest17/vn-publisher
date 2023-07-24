@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Card, Col, Container, Dropdown, Form, FormLabel} from "react-bootstrap";
+import React, {useState} from 'react';
+import {Button, Card, Col, Container, Form} from "react-bootstrap";
 import {SUBJECTS} from "../utils/consts";
 import {useNavigate} from "react-router-dom";
 

@@ -15,19 +15,20 @@ const Auth = () => {
   const [loginUser, setLoginUser] = useState('')
   const [password, setPassword] = useState('')
   const [isError, setIsError] = useState({status: false, message: ''})
-  const [historyNumber, setHistoryNumber] = useState('')
+  const [codeHistory, setCodeHistory] = useState('')
   const [authorRegistration, setAuthorRegistration] = useState(false)
   const navigate = useNavigate();
+  console.log(codeHistory)
 
   const click = async () => {
     try {
       if (isLogin) {
-        const response = await login(loginUser, password)
+        const response = await login(loginUser, password, user.selectedRole)
         console.log(response)
         user.setIsAuth(true)
         navigate('/main')
       } else {
-        const response = await registration(loginUser, password)
+        const response = await registration(loginUser, password, codeHistory)
         console.log(response)
         navigate(LOGIN_ROUTE)
       }
@@ -97,8 +98,8 @@ const Auth = () => {
         </ListGroup>}
         {authorRegistration && <Form.Control
           className="mt-3"
-          value={historyNumber}
-          onChange={(e) => setHistoryNumber(e.target.value)}
+          value={codeHistory}
+          onChange={(e) => setCodeHistory(e.target.value)}
           placeholder="Видете серийный номер истории"
         />}
         {isError.status && <Col className="d-flex justify-content-center mt-3 align-items-center">
@@ -111,7 +112,7 @@ const Auth = () => {
             Есть аккаунта? <NavLink to={LOGIN_ROUTE} onClick={clearAllInput}>Войдите!</NavLink>
           </div>}
           {isLogin || <Button
-            variant={"outline-success"}
+            variant={"primary"}
             onClick={() => {
               click();
               setPassword('')

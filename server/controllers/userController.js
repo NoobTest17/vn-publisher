@@ -3,49 +3,70 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const {v4: uuidv4} = require("uuid");
 const bd = require('../db');
-const {json} = require("express");
 
-const generateJwt = (id, email) => {
-  return jwt.sign(
-    {id, email},
-    process.env.SECRET_KEY,
-    {expiresIn: '24h'}
-  )
+const getPreviousDayWithTime = () => {
+  const now = new Date()
+  const previousDay = new Date(now)
+  previousDay.setDate(now.getDate() - 1)
+  previousDay.setHours(23)
+  previousDay.setMinutes(0)
+  previousDay.setSeconds(0)
+  previousDay.setMilliseconds(0)
+  return previousDay.getTime()
+}
+
+const generateJwt = ({login, vnjson, admin, expiration, access}) => {
+  return jwt.sign({login, vnjson, admin, expiration, access}, process.env.SECRET_KEY, {expiresIn: '24h'})
 }
 
 class UserController {
   async registration(req, res, next) {
-    const {email, password} = req.body
-    if (!email || !password) {
-      return next(ApiError.badRequest('Некорректный email или пароль'))
+    try {
+      const {login, password, codeHistory} = req.body
+      console.log(req.body)
+
+      if (!login || !password) {
+        return next(ApiError.badRequest('Некорректный логин или пароль'))
+      }
+      const isExistingLogin = await bd.query(`select * from auth where login=\'${login}\'`)
+      console.log(isExistingLogin)
+      if (isExistingLogin[0]) {
+        return next(ApiError.badRequest('Пользователь с таким логином уже существует'))
+      }
+      const registrationUser = {
+        login, access: true, admin: false, vnjson: '', expiration: getPreviousDayWithTime()
+      }
+      if (codeHistory) {
+        // Проверка кода истории
+        // Если код корректный
+        registrationUser.vnjson = codeHistory
+      }
+
+      registrationUser.digest = await bcrypt.hash(password, 5);
+
+      const newUser = await bd.queryCreate(JSON.stringify(registrationUser));
+
+      const token = generateJwt(registrationUser);
+      return res.json({token})
+    } catch (e) {
+      console.log(e)
     }
-    const candidate = await bd.query(`select * from test where email=\'${email}\'`)
-    if (candidate.length) {
-      return next(ApiError.badRequest('Пользователь с таким email уже существует'))
-    }
-    const hashPassword = await bcrypt.hash(password, 5);
-    const userId = uuidv4();
-    const newUser = await bd.queryCreate(JSON.stringify({
-      id: userId,
-      password: hashPassword,
-      email: email
-    }));
-    const token = generateJwt(userId, email);
-    return res.json({token})
   }
 
   async login(req, res, next) {
-    const {email, password} = req.body
-    const [user] = await bd.query(`select * from test where email=\'${email}\'`)
-    if (!user) {
-      return next(ApiError.badRequest('Пользователь с таким email не найден'))
-    }
-    const comparePassword = bcrypt.compareSync(password, user.password);
-    if  (!comparePassword) {
-      return next(ApiError.badRequest('Указан неверный пароль'))
-    }
-    const token = generateJwt(user.id, email)
-    return res.json({token})
+    const {login, password, rule} = req.body
+
+    // const {email, password} = req.body
+    // const [user] = await bd.query(`select * from test where email=\'${email}\'`)
+    // if (!user) {
+    //   return next(ApiError.badRequest('Пользователь с таким email не найден'))
+    // }
+    // const comparePassword = bcrypt.compareSync(password, user.password);
+    // if (!comparePassword) {
+    //   return next(ApiError.badRequest('Указан неверный пароль'))
+    // }
+    // const token = generateJwt(user.id, email)
+    // return res.json({token})
   }
 
   async check(req, res, next) {
