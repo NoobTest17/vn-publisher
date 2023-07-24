@@ -18,7 +18,6 @@ const Auth = () => {
   const [codeHistory, setCodeHistory] = useState('')
   const [authorRegistration, setAuthorRegistration] = useState(false)
   const navigate = useNavigate();
-  console.log(codeHistory)
 
   const click = async () => {
     try {
@@ -28,7 +27,8 @@ const Auth = () => {
         user.setIsAuth(true)
         navigate('/main')
       } else {
-        const response = await registration(loginUser, password, codeHistory)
+        const response = await registration(loginUser, password, authorRegistration ? codeHistory : '')
+        setCodeHistory('')
         console.log(response)
         navigate(LOGIN_ROUTE)
       }
@@ -81,7 +81,7 @@ const Auth = () => {
               click()
             }}
           >
-            {rule.name}
+            {rule.label}
           </Button>)}
         </Col> : <ListGroup className="mt-3">
           {RULES_REGISTRATION.map(rule => <ListGroupItem
@@ -93,7 +93,7 @@ const Auth = () => {
             }}
             key={rule.id}
           >
-            {rule.name}
+            {rule.label}
           </ListGroupItem>)}
         </ListGroup>}
         {authorRegistration && <Form.Control
@@ -109,7 +109,7 @@ const Auth = () => {
           {isLogin ? <div className="w-100">
             Нет аккаунта? <NavLink to={REGISTRATION_ROUTE} onClick={clearAllInput}>Зарегистрируйся!</NavLink>
           </div> : <div className="w-100">
-            Есть аккаунта? <NavLink to={LOGIN_ROUTE} onClick={clearAllInput}>Войдите!</NavLink>
+            Есть аккаунт? <NavLink to={LOGIN_ROUTE} onClick={clearAllInput}>Войдите!</NavLink>
           </div>}
           {isLogin || <Button
             variant={"primary"}

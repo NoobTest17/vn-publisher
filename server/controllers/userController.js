@@ -19,6 +19,16 @@ const generateJwt = ({login, vnjson, admin, expiration, access}) => {
   return jwt.sign({login, vnjson, admin, expiration, access}, process.env.SECRET_KEY, {expiresIn: '24h'})
 }
 
+const checkUserRoleAccess = (rule, {admin, vnjson, expiration}) => {
+  if (rule === 'admin' && !admin) {
+    return {error: true, message: 'Нет прав администратора'}
+  }
+  if (rule === 'author' && !vnjson) {
+    return {error: true, message: 'Нет прав автора'}
+  }
+  return {error: false, message: ''}
+}
+
 class UserController {
   async registration(req, res, next) {
     try {
@@ -56,6 +66,27 @@ class UserController {
   async login(req, res, next) {
     const {login, password, rule} = req.body
 
+    const [user] = await bd.query(`select * from auth where login=\'${login}\'`)
+    if (!user) {
+      return next(ApiError.badRequest('Пользователь с таким логином не найден'))
+    }
+    const comparePassword = bcrypt.compareSync(password, user.digest);
+    if (!comparePassword) {
+      return next(ApiError.badRequest('Указанный пароль неверный'))
+    }
+    if (!user.access) {
+      return next(ApiError.badRequest('Закрыт доступ к аккаунту'))
+    }
+    console.log(user)
+    console.log(rule)
+
+    const isLogin = checkUserRoleAccess(rule, user)
+    if (isLogin.error) {
+      return next(ApiError.badRequest(isLogin.message))
+    }
+    console.log(isLogin)
+    const token = generateJwt(user);
+    return res.json({token})
     // const {email, password} = req.body
     // const [user] = await bd.query(`select * from test where email=\'${email}\'`)
     // if (!user) {
@@ -70,8 +101,8 @@ class UserController {
   }
 
   async check(req, res, next) {
-    const token = generateJwt(req.user.id, req.user.email)
-    res.json({token})
+    // const token = generateJwt(req.user.id, req.user.email)
+    // res.json({token})
   }
 }
 
