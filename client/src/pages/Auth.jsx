@@ -25,6 +25,7 @@ const Auth = () => {
         const response = await login(loginUser, password, user.selectedRole)
         console.log(response)
         user.setIsAuth(true)
+        user.setUser(response.data.user)
         navigate('/main')
       } else {
         const response = await registration(loginUser, password, authorRegistration ? codeHistory : '')

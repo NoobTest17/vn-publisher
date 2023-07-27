@@ -38,7 +38,7 @@ class UserController {
       if (!login || !password) {
         return next(ApiError.badRequest('Некорректный логин или пароль'))
       }
-      const isExistingLogin = await bd.query(`select * from auth where login=\'${login}\'`)
+      const isExistingLogin = await bd.queryGET(`select * from auth where login=\'${login}\'`)
       console.log(isExistingLogin)
       if (isExistingLogin[0]) {
         return next(ApiError.badRequest('Пользователь с таким логином уже существует'))
@@ -52,10 +52,11 @@ class UserController {
         registrationUser.vnjson = codeHistory
       }
 
+      // Добавить случайное количество хеширование от 5
       registrationUser.digest = await bcrypt.hash(password, 5);
 
-      const newUser = await bd.queryCreate(JSON.stringify(registrationUser));
-
+      const newUser = await bd.queryPOST('auth', JSON.stringify(registrationUser));
+      console.log(newUser)
       const token = generateJwt(registrationUser);
       return res.json({token})
     } catch (e) {
@@ -66,7 +67,7 @@ class UserController {
   async login(req, res, next) {
     const {login, password, rule} = req.body
 
-    const [user] = await bd.query(`select * from auth where login=\'${login}\'`)
+    const [user] = await bd.queryGET(`select * from auth where login=\'${login}\'`)
     if (!user) {
       return next(ApiError.badRequest('Пользователь с таким логином не найден'))
     }
@@ -77,16 +78,18 @@ class UserController {
     if (!user.access) {
       return next(ApiError.badRequest('Закрыт доступ к аккаунту'))
     }
-    console.log(user)
-    console.log(rule)
+    // console.log(user)
+    // console.log(rule)
 
     const isLogin = checkUserRoleAccess(rule, user)
     if (isLogin.error) {
       return next(ApiError.badRequest(isLogin.message))
     }
-    console.log(isLogin)
+
+    delete user.digest
+    console.log(user)
     const token = generateJwt(user);
-    return res.json({token})
+    return res.json({token, user})
     // const {email, password} = req.body
     // const [user] = await bd.query(`select * from test where email=\'${email}\'`)
     // if (!user) {
@@ -98,6 +101,7 @@ class UserController {
     // }
     // const token = generateJwt(user.id, email)
     // return res.json({token})
+
   }
 
   async check(req, res, next) {

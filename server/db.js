@@ -7,7 +7,7 @@ class DatabaseClient {
     this.method = process.env.BD_METHOD
   }
 
-  async query(queryString) {
+  async queryGET(queryString) {
     try {
       const url = this.host + this.db + this.method
       const query = `${url}?q=${encodeURIComponent(queryString)}`;
@@ -18,12 +18,23 @@ class DatabaseClient {
     }
   }
 
-  async queryCreate(data) {
+  async queryPOST(nameDataBase, data) {
     try {
-      const url = this.host + this.db + 'namespaces/auth/'
+      const url = this.host + this.db + `namespaces/${nameDataBase}/`
       const query = `${url}items?format=json`
       const res = await axios.post(query, data, {params: {format: 'json'}});
       return res.data.items;
+    } catch (error) {
+      throw new Error(`${error.status}: Ошибка при выполнении запроса: ${error.message}`);
+    }
+  }
+
+  async queryPUT(nameDataBase, data) {
+    try {
+      const url = this.host + this.db + `namespaces/${nameDataBase}/`
+      const query = `${url}items?format=json`
+      const res = await axios.put(query, data,{params: {format: 'json'}})
+      return res.data.success;
     } catch (error) {
       throw new Error(`${error.status}: Ошибка при выполнении запроса: ${error.message}`);
     }
