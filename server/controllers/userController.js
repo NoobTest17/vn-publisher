@@ -33,13 +33,11 @@ class UserController {
   async registration(req, res, next) {
     try {
       const {login, password, codeHistory} = req.body
-      console.log(req.body)
 
       if (!login || !password) {
         return next(ApiError.badRequest('Некорректный логин или пароль'))
       }
       const isExistingLogin = await bd.queryGET(`select * from auth where login=\'${login}\'`)
-      console.log(isExistingLogin)
       if (isExistingLogin[0]) {
         return next(ApiError.badRequest('Пользователь с таким логином уже существует'))
       }
@@ -71,6 +69,7 @@ class UserController {
     if (!user) {
       return next(ApiError.badRequest('Пользователь с таким логином не найден'))
     }
+
     const comparePassword = bcrypt.compareSync(password, user.digest);
     if (!comparePassword) {
       return next(ApiError.badRequest('Указанный пароль неверный'))
@@ -78,8 +77,6 @@ class UserController {
     if (!user.access) {
       return next(ApiError.badRequest('Закрыт доступ к аккаунту'))
     }
-    // console.log(user)
-    // console.log(rule)
 
     const isLogin = checkUserRoleAccess(rule, user)
     if (isLogin.error) {
@@ -87,21 +84,8 @@ class UserController {
     }
 
     delete user.digest
-    console.log(user)
     const token = generateJwt(user);
     return res.json({token, user})
-    // const {email, password} = req.body
-    // const [user] = await bd.query(`select * from test where email=\'${email}\'`)
-    // if (!user) {
-    //   return next(ApiError.badRequest('Пользователь с таким email не найден'))
-    // }
-    // const comparePassword = bcrypt.compareSync(password, user.password);
-    // if (!comparePassword) {
-    //   return next(ApiError.badRequest('Указан неверный пароль'))
-    // }
-    // const token = generateJwt(user.id, email)
-    // return res.json({token})
-
   }
 
   async check(req, res, next) {

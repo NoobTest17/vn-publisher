@@ -23,7 +23,7 @@ class DatabaseClient {
       const url = this.host + this.db + `namespaces/${nameDataBase}/`
       const query = `${url}items?format=json`
       const res = await axios.post(query, data, {params: {format: 'json'}});
-      return res.data.items;
+      return res.data.success;
     } catch (error) {
       throw new Error(`${error.status}: Ошибка при выполнении запроса: ${error.message}`);
     }

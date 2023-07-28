@@ -23,7 +23,7 @@ class AdminController {
       user.access = !user.access
       const updateUser = await bd.queryPUT('auth', user)
       console.log(updateUser)
-      res.json({status: 200, message: 'access'})
+      return res.json({status: 200, message: 'access'})
     } catch (e) {
       console.log(e)
     }
@@ -36,11 +36,31 @@ class AdminController {
       if (!user) {
         return next(ApiError.badRequest('Не найден пользователь.'))
       }
-
       user.admin = !user.admin
+
       const updateUser = await bd.queryPUT('auth', user)
       console.log(updateUser)
-      res.json({status: 200, message: 'access'})
+      return res.json({status: 200, message: 'access'})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async allUsers(req, res, next) {
+    try {
+      // убрать поля пароля // используй map
+      const users = await bd.queryGET(`select * from auth`)
+      return res.json({users})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async oneUsers(req, res, next) {
+    try {
+      const {login} = req.query
+      const [user] = await bd.queryGET(`select * from auth where login=\'${login}\'`)
+      return res.json({user})
     } catch (e) {
       console.log(e)
     }
