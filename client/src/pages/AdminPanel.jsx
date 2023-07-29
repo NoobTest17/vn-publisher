@@ -1,11 +1,16 @@
-import React, {useEffect} from 'react';
-import {Card, Col, Container, Nav, Row, Tab} from "react-bootstrap";
+import React, {useEffect, useState} from 'react';
+import {Card, Col, Container, ListGroup, Nav, Row, Tab} from "react-bootstrap";
+import {getAllUsers} from "../http/adminAPI";
 
 const AdminPanel = () => {
-  const users = []
+  const [users, setUsers] = useState([])
 
-  useEffect(() => {
-
+  useEffect(  () => {
+    const allUsers = async () => {
+      const dataUser = await getAllUsers()
+      setUsers(dataUser.data.users)
+    }
+    allUsers()
   }, []);
 
   return (
@@ -30,7 +35,9 @@ const AdminPanel = () => {
             <Col sm={9}>
               <Tab.Content>
                 <Tab.Pane eventKey="userList">
-                  Список игроков
+                  <ListGroup>
+                    {users.map(({login}) => <ListGroup.Item key={login}>{login}</ListGroup.Item>)}
+                  </ListGroup>
                 </Tab.Pane>
                 <Tab.Pane eventKey="second">
                   чаты
